@@ -4,6 +4,8 @@ using System.Collections;
 public class Movement : MonoBehaviour {
 
     public GameControlScript control;
+    public GameObject RightWall;
+    public GameObject LeftWall;
     public KeyCode KeyRight;
     public KeyCode KeyLeft;
 
@@ -47,5 +49,17 @@ public class Movement : MonoBehaviour {
         }
 
         Destroy(other.gameObject);
+    }
+
+    void SetPosition(Vector3 v)
+    {
+        if (control.isGameOver)
+        {
+            var position = Vector3.zero;
+            position.x = Mathf.Lerp(LeftWall.transform.localPosition.x - 1.0f, RightWall.transform.localPosition.x - 1, v.x);
+            position.z = Mathf.Lerp(0, 25, v.z);
+            position.y = transform.localPosition.y;
+            gameObject.transform.localPosition = position;
+        }
     }
 }
