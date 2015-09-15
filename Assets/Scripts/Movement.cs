@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor;
+
 
 public class Movement : MonoBehaviour {
 
@@ -9,6 +11,9 @@ public class Movement : MonoBehaviour {
     public KeyCode KeyRight;
     public KeyCode KeyLeft;
 
+    public float XVelocity = 0.6f;
+    public float ZVelocity = 0.5f;
+        
     // Use this for initialization
     void Start()
     {
@@ -53,12 +58,62 @@ public class Movement : MonoBehaviour {
 
     void SetPosition(Vector3 v)
     {
-        if (control.isGameOver)
+        if (!control.isGameOver)
         {
             var position = Vector3.zero;
-            position.x = Mathf.Lerp(LeftWall.transform.localPosition.x - 1.0f, RightWall.transform.localPosition.x - 1, v.x);
-            position.z = Mathf.Lerp(0, 25, v.z);
+            position.x = Mathf.Lerp(RightWall.transform.localPosition.x + 1.0f, LeftWall.transform.localPosition.x - 1.0f, v.x);
+            position.z = Mathf.Lerp(0.0f, -6.0f, v.z);
             position.y = transform.localPosition.y;
+            // gameObject.transform.localPosition = position;
+
+            float distanceX = gameObject.transform.localPosition.x - position.x;
+            if (distanceX > 0)
+            {
+                if (System.Math.Abs(distanceX) > XVelocity)
+                {
+                    position.x = transform.localPosition.x - XVelocity;
+                }
+                else
+                {
+                    position.x = transform.localPosition.x;
+                }
+            }
+            else if (distanceX < 0)
+            {
+                if (System.Math.Abs(distanceX) > XVelocity)
+                {
+                    position.x = transform.localPosition.x + XVelocity; ;
+                }
+                else
+                {
+                    position.x = transform.localPosition.x;
+                }
+            }
+
+            float distanceZ = gameObject.transform.localPosition.z - position.z;
+            if (distanceZ > 0)
+            {
+                if (System.Math.Abs(distanceZ) > ZVelocity)
+                {
+                    position.z = transform.localPosition.z - ZVelocity;
+                }
+                else
+                {
+                    position.z = transform.localPosition.z;
+                }
+            }
+            else if (distanceZ < 0)
+            {
+                if (System.Math.Abs(distanceZ) > ZVelocity)
+                {
+                    position.z = transform.localPosition.z + ZVelocity;
+                }
+                else
+                {
+                    position.z = transform.localPosition.z;
+                }
+            }
+
             gameObject.transform.localPosition = position;
         }
     }
