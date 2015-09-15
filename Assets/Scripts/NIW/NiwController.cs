@@ -9,6 +9,7 @@ using Rug.Osc;
 public class NiwController : ReceiveOscBehaviourBase
 {
     public GameObject Player;
+    public bool HeadTrackingMovement = true;
 
     #region define CAVE parameters
 
@@ -176,6 +177,15 @@ public class NiwController : ReceiveOscBehaviourBase
             var v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
             playerController.transform.localPosition = v * bounds.extents.x / 1.2f;
         }
+        else if (message.Address.Equals("/vicon/body/Position0"))
+        {
+            var v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
+
+            if (HeadTrackingMovement)
+            {
+                Player.GetComponent<Movement>().SendMessage("SetPosition", v * bounds.extents.x / 1.2f);
+            }
+        }
         else if (message.Address.Equals("/vicon/Quaternion0"))
         {
             //var q = new Quaternion((float)(double)message[0], (float)(double)message[1], (float)(double)message[2], (float)(double)message[3]);
@@ -189,7 +199,10 @@ public class NiwController : ReceiveOscBehaviourBase
             var position = new Vector3(x, 0, z);
             Debug.Log(position);
 
-            Player.GetComponent<Movement>().SendMessage("SetPosition", new Vector3(x, 0, z));
+            if (!HeadTrackingMovement)
+            {
+                Player.GetComponent<Movement>().SendMessage("SetPosition", new Vector3(x, 0, z)); 
+            }
 
         }
 

@@ -60,11 +60,18 @@ public class Movement : MonoBehaviour {
     {
         if (!control.isGameOver)
         {
-            var position = Vector3.zero;
-            position.x = Mathf.Lerp(RightWall.transform.localPosition.x + 1.0f, LeftWall.transform.localPosition.x - 1.0f, v.x);
-            position.z = Mathf.Lerp(0.0f, -6.0f, v.z);
-            position.y = transform.localPosition.y;
-            // gameObject.transform.localPosition = position;
+            Vector3 position = Vector3.zero;
+            if (!GameObject.Find("NiwController").GetComponent<NiwController>().HeadTrackingMovement)
+            {
+                position.x = Mathf.Lerp(RightWall.transform.localPosition.x + 1.0f, LeftWall.transform.localPosition.x - 1.0f, v.x);
+                position.z = Mathf.Lerp(-10.0f, -16.0f, v.z);
+                position.y = transform.localPosition.y;
+            }
+            else
+            {
+                position = v;
+                position.y = transform.localPosition.y; 
+            }
 
             float distanceX = gameObject.transform.localPosition.x - position.x;
             if (distanceX > 0)
