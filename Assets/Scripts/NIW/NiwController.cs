@@ -169,43 +169,40 @@ public class NiwController : ReceiveOscBehaviourBase
 
     protected override void ReceiveMessage(OscMessage message)
     {
-        // Debug.Log(message);
-
         // addresses must be listed in Inspector/Osc Addresses
-        if (message.Address.Equals("/vicon/Position0"))
+        Vector3 v = Vector3.zero;
+        switch(message.Address)
         {
-            var v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
-            playerController.transform.localPosition = v * bounds.extents.x / 1.2f;
-        }
-        else if (message.Address.Equals("/vicon/body/Position0"))
-        {
-            var v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
+            case "/vicon/Position0":
+                v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
+                playerController.transform.localPosition = v * bounds.extents.x / 1.2f;
 
-            if (HeadTrackingMovement)
-            {
-                Player.GetComponent<Movement>().SendMessage("SetPosition", v * bounds.extents.x / 1.2f);
-            }
-        }
-        else if (message.Address.Equals("/vicon/Quaternion0"))
-        {
-            //var q = new Quaternion((float)(double)message[0], (float)(double)message[1], (float)(double)message[2], (float)(double)message[3]);
-        }
-        else if (message.Address.Equals("/niw/client/aggregator/floorcontact"))
-        {
-            // Floor input
-            int id = (int)message[1];
-            float x = (((float)message[2]) / 6.0f);
-            float z = (((float)message[3]) / 6.0f);
-            var position = new Vector3(x, 0, z);
-            Debug.Log(position);
+                break;
+            case "/vicon/body/Position0":
+                v = new Vector3((float)(double)message[0], (float)(double)message[2] - 1.2f, (float)(double)message[1]);
+                if (HeadTrackingMovement)
+                {
+                    Player.GetComponent<Movement>().SendMessage("SetPosition", v * bounds.extents.x / 1.2f);
+                }
 
-            if (!HeadTrackingMovement)
-            {
-                Player.GetComponent<Movement>().SendMessage("SetPosition", new Vector3(x, 0, z)); 
-            }
+                break;
+            case "/vicon/Quaternion0":
+                //var q = new Quaternion((float)(double)message[0], (float)(double)message[1], (float)(double)message[2], (float)(double)message[3]);
 
+                break;
+            case "/niw/client/aggregator/floorcontact":
+                // Floor input
+                int id = (int)message[1];
+                v.x = (((float)message[2]) / 6.0f);
+                v.z = (((float)message[3]) / 6.0f);
+                Debug.Log(v);
+
+                if (!HeadTrackingMovement)
+                {
+                    Player.GetComponent<Movement>().SendMessage("SetPosition", v);
+                }
+                break;
         }
-
     }
 
     public void Send(OscMessage msg)

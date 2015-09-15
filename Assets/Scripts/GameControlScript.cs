@@ -4,7 +4,7 @@ using System.Collections;
 public class GameControlScript : MonoBehaviour {
 
     float timeRemaining = 10;   //Pre-earned time
-    float timeExtension = 3f;   //time to extend by on collecting powerup
+    float timeExtension = 1f;   //time to extend by on collecting powerup
     float timeDeduction = 2f;   //time to reduce, on collecting the snag
     float totalTimeElapsed = 0;
     float score = 0f;      //total score
@@ -25,7 +25,7 @@ public class GameControlScript : MonoBehaviour {
             return;      //move out of the function
 
         totalTimeElapsed += Time.deltaTime;
-        score = totalTimeElapsed * 100;  //<span id="IL_AD1" class="IL_AD">calculate</span> the score based on total time elapsed
+        score = totalTimeElapsed * 100;  //calculate the score based on total time elapsed
         timeRemaining -= Time.deltaTime; //decrement the time remaining by 1 sec every update
         if (timeRemaining <= 0)
         {
@@ -59,16 +59,16 @@ public class GameControlScript : MonoBehaviour {
             Time.timeScale = 0; //set the timescale to zero so as to stop the game world
 
             //display the final score
-            GUI.Box(new Rect(Screen.width / 4, Screen.height / 4, Screen.width / 2, Screen.height / 2), "GAME OVER\nYOUR SCORE: " + (int)score);
+            GUI.Box(new Rect(Screen.width / 4, Screen.height / 8, Screen.width / 2, Screen.height / 6), "GAME OVER\nYOUR SCORE: " + (int)score);
 
             //restart the game on click
-            if (GUI.Button(new Rect(Screen.width / 4 + 10, Screen.height / 4 + Screen.height / 10 + 10, Screen.width / 2 - 20, Screen.height / 10), "RESTART"))
+            if (GUI.Button(new Rect(Screen.width / 4 + 10, Screen.height / 8 + Screen.height / 20 + 10, Screen.width / 2 - 20, Screen.height / 20), "RESTART"))
             {
                 Application.LoadLevel(Application.loadedLevel);
             }
 
             //exit the game
-            if (GUI.Button(new Rect(Screen.width / 4 + 10, Screen.height / 4 + 2 * Screen.height / 10 + 10, Screen.width / 2 - 20, Screen.height / 10), "EXIT GAME"))
+            if (GUI.Button(new Rect(Screen.width / 4 + 10, Screen.height / 8 + 2 * Screen.height / 20 + 10, Screen.width / 2 - 20, Screen.height / 20), "EXIT GAME"))
             {
                 Application.Quit();
             }

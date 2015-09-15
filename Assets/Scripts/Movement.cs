@@ -64,7 +64,7 @@ public class Movement : MonoBehaviour {
             if (!GameObject.Find("NiwController").GetComponent<NiwController>().HeadTrackingMovement)
             {
                 position.x = Mathf.Lerp(RightWall.transform.localPosition.x + 1.0f, LeftWall.transform.localPosition.x - 1.0f, v.x);
-                position.z = Mathf.Lerp(-10.0f, -16.0f, v.z);
+                position.z = Mathf.Lerp(3.0f, -3.0f, v.z);
                 position.y = transform.localPosition.y;
             }
             else
