@@ -5,12 +5,10 @@ using System.Text;
 using System.Collections;
 
 using Rug.Osc;
+using System;
 
 public class NiwController : ReceiveOscBehaviourBase
 {
-    public GameObject Player;
-    public bool HeadTrackingMovement = true;
-
     #region define CAVE parameters
 
     public Bounds bounds;
@@ -55,6 +53,14 @@ public class NiwController : ReceiveOscBehaviourBase
     public GameObject IceObject;
     public GameObject TerrainObject;
     public GameObject WaterObject;
+
+    #endregion
+
+    #region define Game Objects
+
+    public GameObject Player;
+    public bool HeadTrackingMovement = true;
+    private int[,] FeetMap = new int[6, 6];
 
     #endregion
 
@@ -105,6 +111,14 @@ public class NiwController : ReceiveOscBehaviourBase
             }
         }
 
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                FeetMap[i, j] = -1;
+            }
+        }
+
     }
 
     // Update is called once per frame
@@ -120,7 +134,8 @@ public class NiwController : ReceiveOscBehaviourBase
         UpdateFrustums();
 
         #region update haptic feedback aka object under foot
-        return;
+
+        return; // This feature is not used in this game
         for (int i = 0; i < tileRows; i++)
         {
             for (int j = 0; j < tileCols; j++)
@@ -201,6 +216,9 @@ public class NiwController : ReceiveOscBehaviourBase
                 {
                     Player.GetComponent<Movement>().SendMessage("SetPosition", v);
                 }
+
+                UpdateFeetMap(message);
+
                 break;
         }
     }
@@ -309,5 +327,60 @@ public class NiwController : ReceiveOscBehaviourBase
                 (-p2.distance * Vector3.Cross(p3.normal, p1.normal)) +
                 (-p3.distance * Vector3.Cross(p1.normal, p2.normal))) /
             (Vector3.Dot(p1.normal, Vector3.Cross(p2.normal, p3.normal)));
+    }
+
+    void UpdateFeetMap(OscMessage m)
+    {
+        switch(m[0].ToString())
+        {
+            case "add":
+                UpdateFootPosition(m);
+                break;
+            case "update":
+                RemoveFootPosition(Int32.Parse(m[2].ToString()));
+                UpdateFootPosition(m);
+                break;
+            case "remove":
+                UpdateFootPosition(m);
+                break;
+        }
+    }
+
+    void UpdateFootPosition(OscMessage m)
+    {
+        FeetMap[Int32.Parse(m[2].ToString()), Int32.Parse(m[3].ToString())] = Int32.Parse(m[3].ToString());
+    }
+
+    void RemoveFootPosition(int id)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                if (FeetMap[i, j] == id)
+                {
+                    FeetMap[i, j] = -1;
+                    break;
+                }
+            }
+        }
+    }
+
+    public bool[,] GetFeetPosition()
+    {
+        bool[,] b = new bool[6, 6];
+
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                if (FeetMap[i, j] != -1)
+                {
+                    b[i, j] = true;
+                }
+            }
+        }
+
+        return b;
     }
 }

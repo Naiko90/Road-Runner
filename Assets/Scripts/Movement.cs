@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEditor;
 using Rug.Osc;
+using System.Collections.Generic;
 
 public class Movement : MonoBehaviour {
 
@@ -228,10 +229,10 @@ public class Movement : MonoBehaviour {
         }
     }
 
-    public void Send(int x, int z, string texture)
+    public void Send(OscMessage[] a)
     {
-        // OscMessage[] a = { new OscMessage("/niw/preset/all", x, z, texture), new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
-        OscMessage[] a = { new OscMessage("/niw/preset/all", texture), new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
+        // OscMessage[] a = { new OscMessage("/niw/preset", x, z, texture), new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
+        // OscMessage[] a = { new OscMessage("/niw/preset/all", texture), new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
 
         if (m_SendController != null)
         {
@@ -242,5 +243,45 @@ public class Movement : MonoBehaviour {
                 Debug.Log(m); 
             }
         }
+    }
+
+    public void Send(int x, int z, string texture)
+    {
+        // OscMessage[] a = { new OscMessage("/niw/preset", x, z, texture), new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
+        OscMessage[] a = { new OscMessage("/niw/preset/all", texture), new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
+
+        if (m_SendController != null)
+        {
+            // Send the message
+            foreach (OscMessage m in a)
+            {
+                m_SendController.Sender.Send(m);
+                Debug.Log(m);
+            }
+        }
+    }
+
+    void SetOneIileTexture(int x, int z, string texture)
+    {
+        OscMessage[] a = { new OscMessage("/niw/preset", x, z, texture)};
+        Send(a);
+    }
+
+    void SetAllTilesTexture(string texture)
+    {
+        OscMessage[] a = { new OscMessage("/niw/preset/all", texture) };
+        Send(a);
+    }
+
+    void TriggerAndResetOneTile(int x, int z, string texture)
+    {
+        OscMessage[] a = { new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
+        Send(a);
+    }
+
+    void TriggerAndResetAllTiles()
+    {
+        OscMessage[] a = {new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
+        Send(a);
     }
 }
