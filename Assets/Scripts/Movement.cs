@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
-
+using Rug.Osc;
 
 public class Movement : MonoBehaviour {
 
@@ -13,11 +13,22 @@ public class Movement : MonoBehaviour {
 
     public float XVelocity = 0.6f;
     public float ZVelocity = 0.5f;
-        
+
+    public GameObject sendControllerObject;
+    private OscSendController m_SendController;
+
     // Use this for initialization
     void Start()
     {
+        OscSendController controller = sendControllerObject.GetComponent<OscSendController>();
 
+        if (controller == null)
+        {
+            Debug.LogError(string.Format("The GameObject with the name '{0}' does not contain a OscSendController component", sendControllerObject.name));
+            return;
+        }
+
+        m_SendController = controller;
     }
 
     // Update is called once per frame
@@ -44,13 +55,27 @@ public class Movement : MonoBehaviour {
     //check if the character collects the powerups or the snags
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.name == "Powerup(Clone)")
+        int x = 0, z = 0;
+
+        VirtualToPhysicalCoordinates(other.gameObject.transform.localPosition, out x, out z);
+        
+        if (other.gameObject.tag == "PowerUp")
         {
             control.PowerupCollected();
+            
+            if (x != 0 && z != 0)
+            {
+                Send(x, z, "ice");
+            }
         }
-        else if (other.gameObject.name == "Obstacle(Clone)")
+        else if (other.gameObject.tag == "Obstacle")
         {
             control.AlcoholCollected();
+
+            if (x != 0 && z != 0)
+            {
+                Send(x, z, "can");
+            }
         }
 
         Destroy(other.gameObject);
@@ -122,6 +147,100 @@ public class Movement : MonoBehaviour {
             }
 
             gameObject.transform.localPosition = position;
+        }
+    }
+
+    void VirtualToPhysicalCoordinates(Vector3 v, out int x, out int z)
+    {
+        // Compute constants to be used for the mapping
+        float xConstant = 1.2f / GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().bounds.extents.x;
+        float zConstant = 1.2f / GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().bounds.extents.z;
+        
+        // Subtract Bounds Center
+        v.x -= (GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().bounds.center.x + gameObject.transform.localPosition.x);
+        v.z -= (GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().bounds.center.z + gameObject.transform.localPosition.z);
+
+        // Multiply subtracted values for the constants previously calculated
+        v.x *= xConstant;
+        v.z *= zConstant;
+
+        // Add 0.9, so that we move everything in the origin
+        v.x += 0.9f;
+        v.z += 0.0f;
+
+        // Define tile number
+        if (v.x >= 0 && v.x <= 0.3)
+        {
+            x = 1;
+        }
+        else if (v.x > 0.3 && v.x <= 0.6)
+        {
+            x = 2;
+        }
+        else if (v.x > 0.6 && v.x <= 0.9)
+        {
+            x = 3;
+        }
+        else if (v.x > 0.9 && v.x <= 1.2)
+        {
+            x = 4;
+        }
+        else if (v.x > 1.2 && v.x <= 1.5)
+        {
+            x = 5;
+        }
+        else if (v.x > 1.5 && v.x <= 1.8)
+        {
+            x = 6;
+        }
+        else // Boundary
+        {
+            x = 0;
+        }
+
+        if (v.z >= 0 && v.z <= 0.3)
+        {
+            z = 6;
+        }
+        else if (v.z > 0.3 && v.z <= 0.6)
+        {
+            z = 5;
+        }
+        else if (v.z > 0.6 && v.z <= 0.9)
+        {
+            z = 4;
+        }
+        else if (v.z > 0.9 && v.z <= 1.2)
+        {
+            z = 3;
+        }
+        else if (v.z > 1.2 && v.z <= 1.5)
+        {
+            z = 2;
+        }
+        else if (v.z > 1.5 && v.z <= 1.8)
+        {
+            z = 1;
+        }
+        else // Boundary
+        {
+            z = 0;
+        }
+    }
+
+    public void Send(int x, int z, string texture)
+    {
+        // OscMessage[] a = { new OscMessage("/niw/preset/all", x, z, texture), new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
+        OscMessage[] a = { new OscMessage("/niw/preset/all", texture), new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
+
+        if (m_SendController != null)
+        {
+            // Send the message
+            foreach (OscMessage m in a)
+            {
+                m_SendController.Sender.Send(m);
+                Debug.Log(m); 
+            }
         }
     }
 }
