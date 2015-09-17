@@ -101,16 +101,6 @@ public class NiwController : ReceiveOscBehaviourBase
 
         #endregion
 
-        for (int i = 0; i < tileRows; i++)
-        {
-            for (int j = 0; j < tileCols; j++)
-            {
-                var debugObject = Instantiate(HapticDebugObject);
-                debugObject.transform.parent = this.transform;
-                hapticDebugGrid.Add(debugObject);
-            }
-        }
-
         for (int i = 0; i < 6; i++)
         {
             for (int j = 0; j < 6; j++)
@@ -118,7 +108,6 @@ public class NiwController : ReceiveOscBehaviourBase
                 FeetMap[i, j] = -1;
             }
         }
-
     }
 
     // Update is called once per frame
@@ -186,6 +175,7 @@ public class NiwController : ReceiveOscBehaviourBase
     {
         // addresses must be listed in Inspector/Osc Addresses
         Vector3 v = Vector3.zero;
+
         switch(message.Address)
         {
             case "/vicon/Position0":
@@ -337,7 +327,7 @@ public class NiwController : ReceiveOscBehaviourBase
                 UpdateFootPosition(m);
                 break;
             case "update":
-                RemoveFootPosition(Int32.Parse(m[2].ToString()));
+                RemoveFootPosition(Int32.Parse(m[1].ToString()));
                 UpdateFootPosition(m);
                 break;
             case "remove":
@@ -348,7 +338,7 @@ public class NiwController : ReceiveOscBehaviourBase
 
     void UpdateFootPosition(OscMessage m)
     {
-        FeetMap[Int32.Parse(m[2].ToString()), Int32.Parse(m[3].ToString())] = Int32.Parse(m[3].ToString());
+        FeetMap[Int32.Parse(m[2].ToString()), Int32.Parse(m[3].ToString())] = Int32.Parse(m[1].ToString());
     }
 
     void RemoveFootPosition(int id)

@@ -63,20 +63,24 @@ public class Movement : MonoBehaviour {
         if (other.gameObject.tag == "PowerUp")
         {
             control.PowerupCollected();
-            
-            if (x != 0 && z != 0)
-            {
-                Send(x, z, "ice");
-            }
+
+            SetTilesTexture(GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().GetFeetPosition(), "ice");
+
+            //if (x != 0 && z != 0)
+            //{
+            //    Send(x, z, "ice");
+            //}
         }
         else if (other.gameObject.tag == "Obstacle")
         {
             control.AlcoholCollected();
 
-            if (x != 0 && z != 0)
-            {
-                Send(x, z, "can");
-            }
+            SetTilesTexture(GameObject.FindGameObjectWithTag("NiwController").GetComponent<NiwController>().GetFeetPosition(), "can");
+
+            //if (x != 0 && z != 0)
+            //{
+            //    Send(x, z, "can");
+            //}
         }
 
         Destroy(other.gameObject);
@@ -234,7 +238,7 @@ public class Movement : MonoBehaviour {
         // OscMessage[] a = { new OscMessage("/niw/preset", x, z, texture), new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
         // OscMessage[] a = { new OscMessage("/niw/preset/all", texture), new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
 
-        if (m_SendController != null)
+        if (m_SendController != null && a.Length != 0)
         {
             // Send the message
             foreach (OscMessage m in a)
@@ -261,27 +265,70 @@ public class Movement : MonoBehaviour {
         }
     }
 
-    void SetOneIileTexture(int x, int z, string texture)
+    /// <summary>
+    /// Set texture for a specific tile
+    /// </summary>
+    /// <param name="x">X-axis tile number</param>
+    /// <param name="z"> Z-axis tile number</param>
+    /// <param name="texture">Texture to be set</param>
+    /// <param name="trigger">If true, the texture will automatically be triggered</param>
+    void SetTilesTexture(int x, int z, string texture, bool trigger = false)
     {
-        OscMessage[] a = { new OscMessage("/niw/preset", x, z, texture)};
-        Send(a);
+        Send(new[] { new OscMessage("/niw/preset", x, z, texture) });
+
+        if(trigger)
+        {
+            TriggerAndResetOneTile(x, z);
+        }
     }
 
-    void SetAllTilesTexture(string texture)
+    /// <summary>
+    /// Set the same texture for all the tiles
+    /// </summary>
+    /// <param name="texture">Texture to be set</param>
+    /// <param name="trigger">If true, the texture will automatically be triggered</param>
+    void SetTilesTexture(string texture, bool trigger = false)
     {
-        OscMessage[] a = { new OscMessage("/niw/preset/all", texture) };
-        Send(a);
+        Send(new[] { new OscMessage("/niw/preset/all", texture) });
+
+        if (trigger)
+        {
+            TriggerAndResetAllTiles();
+        }
     }
 
-    void TriggerAndResetOneTile(int x, int z, string texture)
+    /// <summary>
+    /// Set texture for all the tiles on which the haptic floor senses a foot
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="texture">Texture to be set</param>
+    /// <param name="trigger">If true, the texture will automatically be triggered</param>
+    void SetTilesTexture(bool[,] b, string texture, bool trigger = false)
     {
-        OscMessage[] a = { new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") };
-        Send(a);
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                if (b[i, j])
+                {
+                    Send(new[] { new OscMessage("/niw/preset", i + 1, j + 1, texture) });
+                }
+            }
+        }
+
+        if (trigger)
+        {
+            TriggerAndResetAllTiles();
+        }
+    }
+
+    void TriggerAndResetOneTile(int x, int z)
+    {
+        Send(new[] { new OscMessage("/niw/trigger", x, z), new OscMessage("/niw/preset", x, z, "none") });
     }
 
     void TriggerAndResetAllTiles()
     {
-        OscMessage[] a = {new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") };
-        Send(a);
+        Send(new[] { new OscMessage("/niw/trigger/all"), new OscMessage("/niw/preset/all", "none") });
     }
 }
